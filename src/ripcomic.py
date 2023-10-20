@@ -4,13 +4,13 @@ import requests, argparse, shutil, subprocess, os, tempfile
 BASE_SEARCH_URL='https://getcomics.info/page/#/?s='
 
 
-def download_comic(comic_url: str, title: str, comics):
+def download_comic(comic_url: str, title: str):
     comic_page_parser = BeautifulSoup(requests.get(comic_url, timeout=10).text, 'html.parser')
 
     try:
         download_url = comic_page_parser.find('a', attrs={'class', 'aio-red'})['href']
         fname = f'{title}.cbz'
-        r = requests.get(download_url, timeout=10)
+        r = requests.get(download_url, timeout=20)
         
         # Downloads the desired comic.
         with open(fname, 'wb') as fd:
@@ -59,16 +59,12 @@ def main():
 
                 comic_url = comics[int(title[0])].a['href']
 
-                download_comic(comic_url, title, comics)
+                download_comic(comic_url, title)
 
             finally:
                 tf.close()
 
 
             
-
 if __name__ == '__main__':
     main()
-
-
-BASE_SEARCH_URL=f'https://getcomics.info/page/#/?s='
