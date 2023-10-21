@@ -17,6 +17,8 @@ def download_comic(comic_url: str, title: str):
             for chunk in r.iter_content(chunk_size=128):
                 fd.write(chunk)
 
+            subprocess.run(f'open "{fd.name}"', shell=True , check=True)
+
     except KeyError:
         print("something went wrong.")
 
@@ -52,17 +54,17 @@ def main():
                 tf.write(data.encode('utf-8'))
 
             try:
-                tf.seek(0)
+                tf.seek(0) # Seek pos needs to be set to the beginning before allowing fzf to read from the file.
+
                 # Actually does the job lmao
                 p = subprocess.check_output("fzf", stdin=tf)
                 title = p.decode('utf-8')
-
                 comic_url = comics[int(title[0])].a['href']
 
                 download_comic(comic_url, title)
 
             finally:
-                tf.close()
+                tf.close() # This will also remove tf from the filesystem.
 
 
             
