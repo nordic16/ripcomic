@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 from ripcomic import BASE_SEARCH_URL
 
 
-def comic_command(comic, page=1):
+def comic_command(comic, page, path):
     """This function handles the comic command."""
     comics = find_comics(comic, page)
 
@@ -23,7 +23,7 @@ def comic_command(comic, page=1):
             title = p.decode('utf-8')
             comic_url = comics[int(title[0])].a['href']
 
-            download_comic(comic_url, title)
+            download_comic(comic_url, title, path)
 
         finally:
             tf.close() # This will also remove tf from the filesystem.
@@ -31,12 +31,13 @@ def comic_command(comic, page=1):
 
 
 ### HELPERS
-def download_comic(comic_url: str, title: str):
+def download_comic(comic_url: str, title: str, path: str):
     comic_page_parser = BeautifulSoup(requests.get(comic_url, timeout=10).text, 'html.parser')
 
     try:
         download_url = comic_page_parser.find('a', attrs={'class', 'aio-red'})['href']
-        fname = f'{title}.cbz'
+        fname = f'{path}{title}.cbz'
+        print(fname)
         r = requests.get(download_url, timeout=20)
 
         # Downloads the desired comic.
