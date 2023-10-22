@@ -160,3 +160,4 @@ cython_debug/
 #.idea/
 
 ripcomic_old.py
+.DS_Store
