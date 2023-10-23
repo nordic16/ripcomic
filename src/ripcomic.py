@@ -16,7 +16,7 @@ def main():
     comicparser = subparsers.add_parser("comic")
     comicparser.add_argument("comic", action='store')
     comicparser.add_argument("--page", action='store', type=int, default=1)
-    comicparser.add_argument("--path", action='store', type=str, default='.')
+    comicparser.add_argument("--path", action='store', type=str, default='')
     args = parser.parse_args()
     
 

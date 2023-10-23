@@ -35,12 +35,11 @@ def download_comic(comic_url: str, title: str, path: str):
     comic_page_parser = BeautifulSoup(requests.get(comic_url, timeout=10).text, 'html.parser')
 
     try:
-        download_url = comic_page_parser.find('a', attrs={'class', 'aio-red'})['href']
-        fname = f'{path}{title}.cbz'
+        download_url = comic_page_parser.find('a', class_="aio-red", title='Download Now')['href']
+
+        fname = f'{path}{title.strip()}.cbz'
         r = requests.get(download_url, timeout=20)
         
-        # progress bar
-
         # Downloads the desired comic.
         with open(fname, 'wb') as fd:
             total = len(list(r.iter_content()))
@@ -51,21 +50,22 @@ def download_comic(comic_url: str, title: str, path: str):
 
                 # this might NOT be the best way to do this lmao.
                 subprocess.run("clear", check=True)
-                outputformat.bar(progress, total, show_values=False, values_pad=1, title="Progress", title_pad=4)
+                outputformat.bar(progress, total, show_values=False, title="Progress", title_pad=4)
 
                 progress += 128
 
             subprocess.run("clear", check=True)
-            outputformat.boxtitle("Download conplete!")
+            outputformat.boxtitle("Download complete!")
 
             subprocess.run(f'open "{fd.name}"', shell=True , check=True)
+
+
 
     except KeyError:
         print("something went wrong.")
 
 
 def find_comics(query: str, page):
-    print(BASE_SEARCH_URL.replace('#', str(page)) + query)
     response = requests.get(BASE_SEARCH_URL.replace('#', str(page)) + query, timeout=10)
 
     if response.status_code:
