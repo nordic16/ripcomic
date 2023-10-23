@@ -1,6 +1,6 @@
 """This module contains a few useful functions to handle all sorts of ripcomic's commands."""
 
-import subprocess, tempfile, requests
+import subprocess, tempfile, requests, outputformat
 from bs4 import BeautifulSoup
 from ripcomic import BASE_SEARCH_URL
 
@@ -37,13 +37,26 @@ def download_comic(comic_url: str, title: str, path: str):
     try:
         download_url = comic_page_parser.find('a', attrs={'class', 'aio-red'})['href']
         fname = f'{path}{title}.cbz'
-        print(fname)
         r = requests.get(download_url, timeout=20)
+        
+        # progress bar
 
         # Downloads the desired comic.
         with open(fname, 'wb') as fd:
+            total = len(list(r.iter_content()))
+            progress = 0
+
             for chunk in r.iter_content(chunk_size=128):
                 fd.write(chunk)
+
+                # this might NOT be the best way to do this lmao.
+                subprocess.run("clear", check=True)
+                outputformat.bar(progress, total, show_values=False, values_pad=1, title="Progress", title_pad=4)
+
+                progress += 128
+
+            subprocess.run("clear", check=True)
+            outputformat.boxtitle("Download conplete!")
 
             subprocess.run(f'open "{fd.name}"', shell=True , check=True)
 
