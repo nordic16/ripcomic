@@ -2,7 +2,7 @@
 
 import subprocess, tempfile, requests, outputformat
 from bs4 import BeautifulSoup
-from ripcomic import BASE_SEARCH_URL
+from ripcomic import BASE_SEARCH_URL, HEADERS
 
 
 def comic_command(comic, page, path):
@@ -32,13 +32,13 @@ def comic_command(comic, page, path):
 
 ### HELPERS
 def download_comic(comic_url: str, title: str, path: str):
-    comic_page_parser = BeautifulSoup(requests.get(comic_url, timeout=10).text, 'html.parser')
+    comic_page_parser = BeautifulSoup(requests.get(comic_url, timeout=10, headers=HEADERS).text, 'html.parser')
 
     try:
         download_url = comic_page_parser.find('a', class_="aio-red", title='Download Now')['href']
 
         fname = f'{path}{title.strip()}.cbz'
-        r = requests.get(download_url, timeout=20)
+        r = requests.get(download_url, timeout=20, headers=HEADERS)
         
         # Downloads the desired comic.
         with open(fname, 'wb') as fd:
@@ -66,7 +66,7 @@ def download_comic(comic_url: str, title: str, path: str):
 
 
 def find_comics(query: str, page):
-    response = requests.get(BASE_SEARCH_URL.replace('#', str(page)) + query, timeout=10)
+    response = requests.get(BASE_SEARCH_URL.replace('#', str(page)) + query, timeout=10, headers=HEADERS)
 
     if response.status_code:
         doc = response.text
