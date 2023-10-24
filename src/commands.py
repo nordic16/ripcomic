@@ -2,7 +2,7 @@
 
 import subprocess, tempfile, requests, outputformat
 from bs4 import BeautifulSoup
-from ripcomic import BASE_SEARCH_URL, HEADERS
+from ripcomic import BASE_SEARCH_URL, HEADERS, SESSION
 
 
 def comic_command(comic, page, path):
@@ -21,7 +21,9 @@ def comic_command(comic, page, path):
             # Actually does the job lmao
             p = subprocess.check_output("fzf", stdin=tf)
             title = p.decode('utf-8')
-            comic_url = comics[int(title[0])].a['href']
+
+            comic_url = comics[int(title[0])].a['href'] 
+            title = title[title.find('-') + 1:].strip() # removes index to display to user later
 
             download_comic(comic_url, title, path)
 
@@ -32,32 +34,31 @@ def comic_command(comic, page, path):
 
 ### HELPERS
 def download_comic(comic_url: str, title: str, path: str):
-    comic_page_parser = BeautifulSoup(requests.get(comic_url, timeout=10, headers=HEADERS).text, 'html.parser')
+    comic_page_parser = BeautifulSoup(SESSION.get(comic_url, timeout=15, headers=HEADERS).text, 'html.parser')
 
     try:
         download_url = comic_page_parser.find('a', class_="aio-red", title='Download Now')['href']
-
         fname = f'{path}{title.strip()}.cbz'
-        r = requests.get(download_url, timeout=20, headers=HEADERS)
         
+        r = SESSION.get(download_url, timeout=20, headers=HEADERS)
+
         # Downloads the desired comic.
-        with open(fname, 'wb') as fd:
-            total = len(list(r.iter_content()))
+        with open(fname, 'wb') as file:
+            # just works lmao
+            total = int(r.headers['content-length'])
             progress = 0
 
-            for chunk in r.iter_content(chunk_size=128):
-                fd.write(chunk)
+            for chunk in r.iter_content(chunk_size=1024*512):
+                progress += file.write(chunk)
 
                 # this might NOT be the best way to do this lmao.
                 subprocess.run("clear", check=True)
                 outputformat.bar(progress, total, show_values=False, title="Progress", title_pad=4)
 
-                progress += 128
 
-            subprocess.run("clear", check=True)
             outputformat.boxtitle("Download complete!")
 
-            subprocess.run(f'open "{fd.name}"', shell=True , check=True)
+            subprocess.run(f'open "{file.name}"', shell=True , check=True)
 
 
 
@@ -66,7 +67,7 @@ def download_comic(comic_url: str, title: str, path: str):
 
 
 def find_comics(query: str, page):
-    response = requests.get(BASE_SEARCH_URL.replace('#', str(page)) + query, timeout=10, headers=HEADERS)
+    response = SESSION.get(BASE_SEARCH_URL.replace('#', str(page)) + query, timeout=10, headers=HEADERS)
 
     if response.status_code:
         doc = response.text

@@ -1,8 +1,9 @@
-import argparse, shutil
+import argparse, shutil, requests
 import commands
 
 BASE_SEARCH_URL='https://getcomics.org/page/#?s='
 HEADERS = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
+SESSION = requests.session()
 
 def main():
     if not shutil.which("fzf"): # if fzf is not installed.
