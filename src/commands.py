@@ -1,8 +1,8 @@
 """This module contains a few useful functions to handle all sorts of ripcomic's commands."""
 
-import subprocess, tempfile, requests, outputformat
+import subprocess, tempfile, outputformat
 from bs4 import BeautifulSoup
-from ripcomic import BASE_SEARCH_URL, HEADERS, SESSION
+from ripcomic import BASE_SEARCH_URL, HEADERS, SESSION, DEBUG
 
 
 def comic_command(comic, page, path):
@@ -19,13 +19,19 @@ def comic_command(comic, page, path):
             tf.seek(0) # Seek pos needs to be set to the beginning before allowing fzf to read from the file.
 
             # Actually does the job lmao
-            p = subprocess.check_output("fzf", stdin=tf)
+            p = subprocess.check_output('fzf', stdin=tf)
             title = p.decode('utf-8')
 
-            comic_url = comics[int(title[0])].a['href'] 
+            comic_url = comics[int(title[0])].a['href']
             title = title[title.find('-') + 1:].strip() # removes index to display to user later
 
             download_comic(comic_url, title, path)
+
+        except subprocess.CalledProcessError as e:
+            print(f'Something went wrong! Make sure {page} isn\'t a huge number or try again later.')
+
+            if DEBUG:
+                print(e)
 
         finally:
             tf.close() # This will also remove tf from the filesystem.
@@ -34,12 +40,14 @@ def comic_command(comic, page, path):
 
 ### HELPERS
 def download_comic(comic_url: str, title: str, path: str):
+    """Downloads the comic onto the file system"""
     comic_page_parser = BeautifulSoup(SESSION.get(comic_url, timeout=15, headers=HEADERS).text, 'html.parser')
 
     try:
-        download_url = comic_page_parser.find('a', class_="aio-red", title='Download Now')['href']
+        download_url = comic_page_parser.find('a', class_='aio-red', title='Download Now')['href']
         fname = f'{path}{title.strip()}.cbz'
-        
+  
+        outputformat.boxtitle('Loading comic...')
         r = SESSION.get(download_url, timeout=20, headers=HEADERS)
 
         # Downloads the desired comic.
@@ -51,22 +59,25 @@ def download_comic(comic_url: str, title: str, path: str):
             for chunk in r.iter_content(chunk_size=1024*512):
                 progress += file.write(chunk)
 
-                # this might NOT be the best way to do this lmao.
-                subprocess.run("clear", check=True)
-                outputformat.bar(progress, total, show_values=False, title="Progress", title_pad=4)
-
-
-            outputformat.boxtitle("Download complete!")
-
+                if not DEBUG:
+                    # this might NOT be the best way to do this!
+                    subprocess.run('clear', check=True)
+                    outputformat.bar(progress, total, show_values=False, title=outputformat.b('1mProgress', return_str=True), title_pad=4, style='bar')
+                
+            outputformat.boxtitle('Download complete!')
             subprocess.run(f'open "{file.name}"', shell=True , check=True)
 
+    except KeyError as e:
+        print('something went wrong.')
+
+        if DEBUG:
+            print(e)
 
 
-    except KeyError:
-        print("something went wrong.")
 
 
 def find_comics(query: str, page):
+    """Scrapes getcomics.info for comics that match @query"""
     response = SESSION.get(BASE_SEARCH_URL.replace('#', str(page)) + query, timeout=10, headers=HEADERS)
 
     if response.status_code:
