@@ -1,9 +1,6 @@
-import argparse, shutil, requests, outputformat, subprocess, tempfile
+import argparse, shutil, subprocess, tempfile
 import helpers
-
-BASE_SEARCH_URL='https://getcomics.org/page/#?s='
-SESSION = requests.session()
-DEBUG = False
+from settings import DEBUG, SESSION
 
 def main():
     SESSION.headers.update({'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36',
@@ -13,6 +10,8 @@ def main():
         print('fzf is not installed on $PATH')
         exit()
 
+    config = helpers.initialize_config()
+
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers()
 
@@ -20,16 +19,18 @@ def main():
     comicparser = subparsers.add_parser('comic')
     comicparser.add_argument('comic', action='store')
     comicparser.add_argument('--page', action='store', type=int, default=1)
-    comicparser.add_argument('--path', action='store', type=str, default='')
+    comicparser.add_argument('--path', action='store', type=str, default=config.get('Settings', 'library-path'))
     comicparser.set_defaults(func=comic_command)
 
     libraryparser = subparsers.add_parser('set-library')
     libraryparser.add_argument('library')
+    libraryparser.set_defaults(func=set_library_command)
     
     args = parser.parse_args()
     args.func(args)
 
 
+### COMMANDS
 def comic_command(args):
     """This function handles the comic command."""
     comic = args.comic
@@ -65,6 +66,10 @@ def comic_command(args):
         finally:
             tf.close() # This will also remove tf from the filesystem.
 
+
+def set_library_command(args):
+    """Handles the set-library command"""
+    print('feature not yet implemented')
 
 
 if __name__ == '__main__':

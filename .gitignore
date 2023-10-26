@@ -161,3 +161,4 @@ cython_debug/
 
 ripcomic_old.py
 **/.DS_Store
+settings.py

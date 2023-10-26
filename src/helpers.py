@@ -1,12 +1,18 @@
 """This module contains a few useful functions to handle all sorts of ripcomic's commands."""
-import outputformat, subprocess
-
+import outputformat, subprocess, configparser, os
 from bs4 import BeautifulSoup
-from ripcomic import BASE_SEARCH_URL, SESSION, DEBUG
+from settings import BASE_SEARCH_URL, SESSION, DEBUG
 
-### HELPERS
+### HELPERS 
+def initialize_config():
+    parser = configparser.ConfigParser()
+    parser.read(os.path.expanduser('~/.config/ripcomic.ini'))
+    return parser
+
+
 def download_comic(comic_url: str, title: str, path: str):
     """Downloads the comic onto the file system"""
+
     comic_page_parser = BeautifulSoup(SESSION.get(comic_url, timeout=15).text, 'html.parser')
 
     try:
@@ -18,7 +24,7 @@ def download_comic(comic_url: str, title: str, path: str):
         r = SESSION.get(download_url, timeout=20)
 
         # Downloads the desired comic.
-        with open(fname, 'wb') as file:
+        with open(os.path.expanduser(fname), 'wb') as file:
             # just works lmao
             total = int(r.headers['content-length'])
             progress = 0
@@ -44,7 +50,11 @@ def download_comic(comic_url: str, title: str, path: str):
 
 def find_comics(query: str, page):
     """Scrapes getcomics.info for comics that match @query"""
-    response = SESSION.get(BASE_SEARCH_URL.replace('#', str(page)) + query, timeout=10)
+    url = BASE_SEARCH_URL.replace('#', str(page)) + query
+
+    print(url)
+
+    response = SESSION.get(url, timeout=15)
 
     if response.status_code:
         doc = response.text
