@@ -4,7 +4,7 @@
 3. Add help command
 4. Library management.
 5. Setup
-    1. Remember to setup 
+    + Setup must create the config file and directory.
 
 ## Long term
 1. Attempt to increase scraping speed.
