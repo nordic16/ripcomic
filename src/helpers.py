@@ -1,42 +1,8 @@
 """This module contains a few useful functions to handle all sorts of ripcomic's commands."""
+import outputformat, subprocess
 
-import subprocess, tempfile, outputformat
 from bs4 import BeautifulSoup
 from ripcomic import BASE_SEARCH_URL, SESSION, DEBUG
-
-
-def comic_command(comic, page, path):
-    """This function handles the comic command."""
-    comics = find_comics(comic, page)
-
-    # In order to pass arguments onto fzf, create a temporary file that fzf will be accessing.
-    with tempfile.NamedTemporaryFile() as tf:
-        for (index, c) in enumerate(comics):
-            data = f'{index} - {c.a.img["alt"]}\n'
-            tf.write(data.encode('utf-8'))
-
-        try:
-            tf.seek(0) # Seek pos needs to be set to the beginning before allowing fzf to read from the file.
-
-            # Actually does the job lmao
-            p = subprocess.check_output('fzf', stdin=tf)
-            title = p.decode('utf-8')
-
-            comic_url = comics[int(title[0])].a['href']
-            title = title[title.find('-') + 1:].strip() # removes index to display to user later
-
-            download_comic(comic_url, title, path)
-
-        except subprocess.CalledProcessError as e:
-            print(f'Something went wrong! Make sure {page} isn\'t a huge number or try again later.')
-
-            if DEBUG:
-                print(e)
-
-        finally:
-            tf.close() # This will also remove tf from the filesystem.
-
-
 
 ### HELPERS
 def download_comic(comic_url: str, title: str, path: str):
