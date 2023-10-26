@@ -2,7 +2,7 @@
 
 import subprocess, tempfile, outputformat
 from bs4 import BeautifulSoup
-from ripcomic import BASE_SEARCH_URL, HEADERS, SESSION, DEBUG
+from ripcomic import BASE_SEARCH_URL, SESSION, DEBUG
 
 
 def comic_command(comic, page, path):
@@ -41,14 +41,15 @@ def comic_command(comic, page, path):
 ### HELPERS
 def download_comic(comic_url: str, title: str, path: str):
     """Downloads the comic onto the file system"""
-    comic_page_parser = BeautifulSoup(SESSION.get(comic_url, timeout=15, headers=HEADERS).text, 'html.parser')
+    comic_page_parser = BeautifulSoup(SESSION.get(comic_url, timeout=15).text, 'html.parser')
 
     try:
         download_url = comic_page_parser.find('a', class_='aio-red', title='Download Now')['href']
         fname = f'{path}{title.strip()}.cbz'
   
         outputformat.boxtitle('Loading comic...')
-        r = SESSION.get(download_url, timeout=20, headers=HEADERS)
+
+        r = SESSION.get(download_url, timeout=20)
 
         # Downloads the desired comic.
         with open(fname, 'wb') as file:
@@ -62,7 +63,7 @@ def download_comic(comic_url: str, title: str, path: str):
                 if not DEBUG:
                     # this might NOT be the best way to do this!
                     subprocess.run('clear', check=True)
-                    outputformat.bar(progress, total, show_values=False, title=outputformat.b('1mProgress', return_str=True), title_pad=4, style='bar')
+                    outputformat.bar(progress, total, show_values=False, title=outputformat.b('Progress', return_str=True), title_pad=4, style='bar')
                 
             outputformat.boxtitle('Download complete!')
             subprocess.run(f'open "{file.name}"', shell=True , check=True)
@@ -75,10 +76,9 @@ def download_comic(comic_url: str, title: str, path: str):
 
 
 
-
 def find_comics(query: str, page):
     """Scrapes getcomics.info for comics that match @query"""
-    response = SESSION.get(BASE_SEARCH_URL.replace('#', str(page)) + query, timeout=10, headers=HEADERS)
+    response = SESSION.get(BASE_SEARCH_URL.replace('#', str(page)) + query, timeout=10)
 
     if response.status_code:
         doc = response.text
