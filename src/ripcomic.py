@@ -1,6 +1,6 @@
-import argparse, shutil, subprocess, tempfile
+import argparse, shutil, subprocess, tempfile, os
 import helpers
-from settings import DEBUG, SESSION
+from settings import DEBUG, SESSION, DEFAULT_CONFIG_PATH
 
 def main():
     SESSION.headers.update({'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36',
@@ -69,7 +69,18 @@ def comic_command(args):
 
 def set_library_command(args):
     """Handles the set-library command"""
-    print('feature not yet implemented')
+    config = helpers.initialize_config()
+
+    path = os.path.expanduser(args.library)
+
+    if os.path.isdir(path):
+        with open(DEFAULT_CONFIG_PATH, 'w') as cfg:
+            config.set(section="Settings", option="library-path",  value=path)
+            config.write(cfg)
+        
+    
+    else:
+        print("Invalid path.")
 
 
 if __name__ == '__main__':
