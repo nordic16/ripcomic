@@ -63,3 +63,15 @@ def find_comics(query: str, page):
         comics = parser.find_all(attrs={'class' : 'post-header-image'})
 
         return comics
+
+
+def list_files(path, indent_level=0):
+    """lists files recursively"""
+    
+    for f in os.listdir(path):
+        abs_path = os.path.abspath(f'{path}/{f}')
+        if os.path.isdir(abs_path):
+            list_files(abs_path, indent_level + 2)
+
+        else:
+            print(' ' * indent_level + abs_path)

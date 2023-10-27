@@ -19,12 +19,16 @@ def main():
     comicparser = subparsers.add_parser('comic')
     comicparser.add_argument('comic', action='store')
     comicparser.add_argument('--page', action='store', type=int, default=1)
-    comicparser.add_argument('--path', action='store', type=str, default=config.get('Settings', 'library-path'))
+    comicparser.add_argument('--path', action='store', default=config.get('Settings', 'library-path'))
     comicparser.set_defaults(func=comic_command)
 
-    libraryparser = subparsers.add_parser('set-library')
-    libraryparser.add_argument('library')
-    libraryparser.set_defaults(func=set_library_command)
+    setlibraryparser = subparsers.add_parser('set-library')
+    setlibraryparser.add_argument('library')
+    setlibraryparser.set_defaults(func=set_library_command)
+
+    libraryparser = subparsers.add_parser('library')
+    libraryparser.add_argument('--list', action='store_true')
+    libraryparser.set_defaults(func=library_command)
     
     args = parser.parse_args()
     args.func(args)
@@ -78,9 +82,16 @@ def set_library_command(args):
             config.set(section="Settings", option="library-path",  value=path)
             config.write(cfg)
         
-    
     else:
         print("Invalid path.")
+
+
+def library_command(args):
+    config = helpers.initialize_config()
+    library_path = os.path.expanduser(config.get("Settings", "library-path"))
+
+    if args.list:
+        helpers.list_files(os.path.expanduser(library_path))
 
 
 if __name__ == '__main__':
