@@ -1,4 +1,5 @@
 import argparse, shutil, subprocess, tempfile, os
+import outputformat
 import helpers
 from settings import DEBUG, SESSION, DEFAULT_CONFIG_PATH
 
@@ -54,32 +55,31 @@ def comic_command(args):
 
             # Actually does the job lmao
             p = subprocess.check_output('fzf', stdin=tf)
+            
             title = p.decode('utf-8')
-
             comic_url = comics[int(title[0])].a['href']
             title = title[title.find('-') + 1:].strip() # removes index to display to user later
 
             helpers.download_comic(comic_url, title, path)
-
+       
         except subprocess.CalledProcessError as e:
-            print(f'Something went wrong! Make sure {page} isn\'t a huge number or try again later.')
+            print('Something went wrong!')
 
             if DEBUG:
                 print(e)
 
         finally:
-            tf.close() # This will also remove tf from the filesystem.
-
-
+            tf.close() # This will also remove tf from the filesystem.    
+    
+    
 def set_library_command(args):
     """Handles the set-library command"""
     config = helpers.initialize_config()
-
     path = os.path.expanduser(args.library)
 
     if os.path.isdir(path):
         with open(DEFAULT_CONFIG_PATH, 'w') as cfg:
-            config.set(section="Settings", option="library-path",  value=path)
+            config.set(section="Settings", option="library-path", value=path)
             config.write(cfg)
         
     else:
@@ -87,11 +87,27 @@ def set_library_command(args):
 
 
 def library_command(args):
+    """Handles the library command"""
     config = helpers.initialize_config()
     library_path = os.path.expanduser(config.get("Settings", "library-path"))
 
+    # removes trailing / if needed:
+    library_path = library_path[:-1] if library_path[-1] == '/' else library_path
+
     if args.list:
-        helpers.list_files(os.path.expanduser(library_path))
+        data = helpers.list_files(os.path.expanduser(library_path), show_full_path=True)
+
+        with tempfile.NamedTemporaryFile() as tf:
+            tf.writelines([f'{os.path.basename(x)}\n'.encode('utf-8') for x in data])
+            tf.seek(0)
+
+            comicname = subprocess.check_output('fzf', stdin=tf).decode('utf-8').strip()
+            # there are probably better ways to do this.
+            comic = [x for x in data if comicname in x][0]
+            subprocess.run(f'open "{comic}"', shell=True, check=True)
+            
+            tf.close()
+
 
 
 if __name__ == '__main__':
