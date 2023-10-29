@@ -100,7 +100,7 @@ def library_command(args):
         data = helpers.list_files(os.path.expanduser(library_path), show_full_path=True)
         # Filters out non-comic files
 
-        data = list(filter(lambda x: os.path.splitext(x)[1] == '.cbz' or os.path.splitext([1] == '.cbr'), data))
+        data = list(filter(lambda x: os.path.splitext(x)[1] == '.cbz' or os.path.splitext(x)[1] == '.cbr', data))
         data.sort()
 
         with tempfile.NamedTemporaryFile() as tf:
