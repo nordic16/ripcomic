@@ -1,5 +1,4 @@
 import argparse, shutil, subprocess, tempfile, os
-import outputformat
 import helpers
 from settings import DEBUG, SESSION, DEFAULT_CONFIG_PATH
 
@@ -16,7 +15,7 @@ def main():
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers()
 
-    # Command to scrape comics 
+    # Command to scrape comics
     comicparser = subparsers.add_parser('comic')
     comicparser.add_argument('comic', action='store')
     comicparser.add_argument('--page', action='store', type=int, default=1)
@@ -30,7 +29,7 @@ def main():
     libraryparser = subparsers.add_parser('library')
     libraryparser.add_argument('--list', action='store_true')
     libraryparser.set_defaults(func=library_command)
-    
+
     args = parser.parse_args()
     args.func(args)
 
@@ -51,17 +50,19 @@ def comic_command(args):
             tf.write(data.encode('utf-8'))
 
         try:
-            tf.seek(0) # Seek pos needs to be set to the beginning before allowing fzf to read from the file.
+            # Seek pos needs to be set to the beginning before allowing fzf to read from the file.
+            tf.seek(0)
 
             # Actually does the job lmao
             p = subprocess.check_output('fzf', stdin=tf)
-            
+
             title = p.decode('utf-8')
             comic_url = comics[int(title[0])].a['href']
-            title = title[title.find('-') + 1:].strip() # removes index to display to user later
+            # removes index to display to user later
+            title = title[title.find('-') + 1:].strip()
 
             helpers.download_comic(comic_url, title, path)
-       
+
         except subprocess.CalledProcessError as e:
             print('Something went wrong!')
 
@@ -69,19 +70,20 @@ def comic_command(args):
                 print(e)
 
         finally:
-            tf.close() # This will also remove tf from the filesystem.    
-    
-    
+            # This will also remove tf from the filesystem.
+            tf.close()
+
+
 def set_library_command(args):
     """Handles the set-library command"""
     config = helpers.initialize_config()
     path = os.path.expanduser(args.library)
 
     if os.path.isdir(path):
-        with open(DEFAULT_CONFIG_PATH, 'w') as cfg:
+        with open(DEFAULT_CONFIG_PATH, 'wt') as cfg:
             config.set(section="Settings", option="library-path", value=path)
             config.write(cfg)
-        
+
     else:
         print("Invalid path.")
 
@@ -96,6 +98,10 @@ def library_command(args):
 
     if args.list:
         data = helpers.list_files(os.path.expanduser(library_path), show_full_path=True)
+        # Filters out non-comic files
+
+        data = list(filter(lambda x: os.path.splitext(x)[1] == '.cbz' or os.path.splitext([1] == '.cbr'), data))
+        data.sort()
 
         with tempfile.NamedTemporaryFile() as tf:
             tf.writelines([f'{os.path.basename(x)}\n'.encode('utf-8') for x in data])
@@ -105,9 +111,8 @@ def library_command(args):
             # there are probably better ways to do this.
             comic = [x for x in data if comicname in x][0]
             subprocess.run(f'open "{comic}"', shell=True, check=True)
-            
-            tf.close()
 
+            tf.close()
 
 
 if __name__ == '__main__':

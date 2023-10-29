@@ -1,5 +1,5 @@
 """This module contains a few useful functions to handle all sorts of ripcomic's commands."""
-import outputformat, subprocess, configparser, os, tempfile
+import outputformat, subprocess, configparser, os
 from bs4 import BeautifulSoup
 from settings import BASE_SEARCH_URL, SESSION, DEBUG
 
@@ -12,7 +12,6 @@ def initialize_config():
 
 def download_comic(comic_url: str, title: str, path: str):
     """Downloads the comic onto the file system"""
-
     comic_page_parser = BeautifulSoup(SESSION.get(comic_url, timeout=15).text, 'html.parser')
 
     try:
@@ -57,12 +56,12 @@ def find_comics(query: str, page: int):
         parser = BeautifulSoup(doc, 'html.parser')
 
         return parser.find_all(attrs={'class' : 'post-header-image'})
-    
+  
 
 def list_files(path: str, show_full_path: bool, values_to_return=[]):
     """returns files through values_to_return"""
     full_path = os.path.expanduser(path)
-    print(full_path)
+
     # There's probably no need to include hidden files.
     files = [x for x in os.listdir(full_path) if not x.startswith('.')]
 
