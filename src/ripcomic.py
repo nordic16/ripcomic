@@ -6,7 +6,7 @@ def main():
     SESSION.headers.update({'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36',
         'Accept-Encoding': 'gzip'})
 
-    if not shutil.which('fzf'): # if fzf is not installed.
+    if not shutil.which('fzf'):
         print('fzf is not installed on $PATH')
         exit()
 
@@ -91,14 +91,17 @@ def library_command(args):
     config = helpers.initialize_config()
     library_path = os.path.expanduser(config.get("Settings", "library-path"))
 
-    # removes trailing / if needed.
+    # removes trailing / if needed
     library_path = library_path[:-1] if library_path[-1] == '/' else library_path
 
     if args.action == 'list':
         data = helpers.list_files(os.path.expanduser(library_path), show_full_path=True)
 
         # Filters out non-comic files
-        data = list(filter(lambda x: os.path.splitext(x)[1] == '.cbz' or os.path.splitext(x)[1] == '.cbr', data))
+        data = list(filter(lambda x: os.path.splitext(x)[1] == '.cbz' 
+            or os.path.splitext(x)[1] == '.cbr', data))
+        
+        # Probably no need to write my own sorting algorithm seen as this works just fine.
         data.sort()
 
         with tempfile.NamedTemporaryFile() as tf:

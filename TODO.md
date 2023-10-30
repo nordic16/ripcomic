@@ -3,6 +3,12 @@
 2. Format output and error handling. [DONE]
 3. Add help command
 4. Library management.
+    1. List feature [DONE]
+    2. Remove feature:
+        1. List all comics and let the user choose one.
+        2. Ask, one more time if they are sure.
+        3. If yes, delete the comic.
+
 5. Setup
     + Setup must create the config file and directory.
 

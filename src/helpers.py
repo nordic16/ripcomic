@@ -59,7 +59,7 @@ def find_comics(query: str, page: int):
   
 
 def list_files(path: str, show_full_path: bool, values_to_return=[]):
-    """returns files through values_to_return"""
+    """returns all files within a directory."""
     full_path = os.path.expanduser(path)
 
     # There's probably no need to include hidden files.
