@@ -1,4 +1,4 @@
-import argparse, shutil, subprocess, tempfile, os
+import argparse, shutil, subprocess, tempfile, os, outputformat
 import helpers
 from settings import DEBUG, SESSION, DEFAULT_CONFIG_PATH
 
@@ -93,30 +93,40 @@ def library_command(args):
 
     # removes trailing / if needed
     library_path = library_path[:-1] if library_path[-1] == '/' else library_path
+    data = helpers.list_files(os.path.expanduser(library_path), show_full_path=True)
 
-    if args.action == 'list':
-        data = helpers.list_files(os.path.expanduser(library_path), show_full_path=True)
+    # Filters out non-comic files
+    data = list(filter(lambda x: os.path.splitext(x)[1] in ('.cbr', '.cbz'), data))
+    data.sort()
 
-        # Filters out non-comic files
-        data = list(filter(lambda x: os.path.splitext(x)[1] == '.cbz' 
-            or os.path.splitext(x)[1] == '.cbr', data))
-        
-        # Probably no need to write my own sorting algorithm seen as this works just fine.
-        data.sort()
+    with tempfile.NamedTemporaryFile() as tf:
+        tf.writelines([f'{os.path.basename(x)}\n'.encode('utf-8') for x in data])
+        tf.seek(0)
 
-        with tempfile.NamedTemporaryFile() as tf:
-            tf.writelines([f'{os.path.basename(x)}\n'.encode('utf-8') for x in data])
-            tf.seek(0)
-
+        if args.action == 'list':
             comicname = subprocess.check_output('fzf', stdin=tf).decode('utf-8').strip()
             # there are probably better ways to do this.
             comic = [x for x in data if comicname in x][0]
             subprocess.run(f'open "{comic}"', shell=True, check=True)
 
-            tf.close()
+        elif args.action == 'remove':
+            comicname = subprocess.check_output('fzf', stdin=tf).decode('utf-8').strip()
+            comic = [x for x in data if comicname in x][0]
+            ans = input(f'Are you sure you want to delete "{comicname}"? (y/n): ').lower()
 
-    elif args.action == 'remove':
-        pass
+            if ans in ('y', 'yes'):
+                os.remove(comic)
+                outputformat.br()
+                outputformat.boxtitle(f'{comicname} deleted successfully.', style='#', bold=True)
+                outputformat.br()
+            
+            else:
+                outputformat.br()
+                outputformat.boxtitle('Huh?', style='#', bold=True)
+                outputformat.br()
+        
+        tf.close()
+
 
 
 if __name__ == '__main__':
