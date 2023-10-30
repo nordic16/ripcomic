@@ -27,7 +27,7 @@ def main():
     setlibraryparser.set_defaults(func=set_library_command)
 
     libraryparser = subparsers.add_parser('library')
-    libraryparser.add_argument('--list', action='store_true')
+    libraryparser.add_argument('action', action='store', choices=['list', 'remove'])
     libraryparser.set_defaults(func=library_command)
 
     args = parser.parse_args()
@@ -45,9 +45,7 @@ def comic_command(args):
 
     # In order to pass arguments onto fzf, create a temporary file that fzf will be accessing.
     with tempfile.NamedTemporaryFile() as tf:
-        for (index, c) in enumerate(comics):
-            data = f'{index} - {c.a.img["alt"]}\n'
-            tf.write(data.encode('utf-8'))
+        tf.writelines([f'{index} - {c.a.img["alt"]}\n'.encode('utf-8') for (index, c) in enumerate(comics)])
 
         try:
             # Seek pos needs to be set to the beginning before allowing fzf to read from the file.
@@ -93,13 +91,13 @@ def library_command(args):
     config = helpers.initialize_config()
     library_path = os.path.expanduser(config.get("Settings", "library-path"))
 
-    # removes trailing / if needed:
+    # removes trailing / if needed.
     library_path = library_path[:-1] if library_path[-1] == '/' else library_path
 
-    if args.list:
+    if args.action == 'list':
         data = helpers.list_files(os.path.expanduser(library_path), show_full_path=True)
-        # Filters out non-comic files
 
+        # Filters out non-comic files
         data = list(filter(lambda x: os.path.splitext(x)[1] == '.cbz' or os.path.splitext(x)[1] == '.cbr', data))
         data.sort()
 
@@ -113,6 +111,9 @@ def library_command(args):
             subprocess.run(f'open "{comic}"', shell=True, check=True)
 
             tf.close()
+
+    elif args.action == 'remove':
+        pass
 
 
 if __name__ == '__main__':
