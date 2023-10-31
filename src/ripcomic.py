@@ -27,7 +27,7 @@ def main():
     setlibraryparser.set_defaults(func=set_library_command)
 
     libraryparser = subparsers.add_parser('library')
-    libraryparser.add_argument('action', action='store', choices=['list', 'remove'])
+    libraryparser.add_argument('action', action='store', choices=['list', 'remove', 'last-read'])
     libraryparser.set_defaults(func=library_command)
 
     args = parser.parse_args()
@@ -53,13 +53,16 @@ def comic_command(args):
 
             # Actually does the job lmao
             p = subprocess.check_output('fzf', stdin=tf)
+            config = helpers.initialize_config()
 
             title = p.decode('utf-8')
             comic_url = comics[int(title[0])].a['href']
+            
             # removes index to display to user later
             title = title[title.find('-') + 1:].strip()
 
             helpers.download_comic(comic_url, title, path)
+            helpers.write_to_conf('General', 'last-read', title)
 
         except subprocess.CalledProcessError as e:
             print('Something went wrong!')
@@ -74,13 +77,10 @@ def comic_command(args):
 
 def set_library_command(args):
     """Handles the set-library command"""
-    config = helpers.initialize_config()
     path = os.path.expanduser(args.library)
 
     if os.path.isdir(path):
-        with open(DEFAULT_CONFIG_PATH, 'wt') as cfg:
-            config.set(section="Settings", option="library-path", value=path)
-            config.write(cfg)
+        helpers.write_to_conf('Settings', 'library-path', path)
 
     else:
         print("Invalid path.")
@@ -99,32 +99,37 @@ def library_command(args):
     data = list(filter(lambda x: os.path.splitext(x)[1] in ('.cbr', '.cbz'), data))
     data.sort()
 
+    # This code is outside the 1st and 2nd if statement in order to reduce repetition, despite not being used in the 'last-read' command.
     with tempfile.NamedTemporaryFile() as tf:
         tf.writelines([f'{os.path.basename(x)}\n'.encode('utf-8') for x in data])
         tf.seek(0)
 
+        # TODO: lines common to 'list' and 'remove' should be their own separate function.
         if args.action == 'list':
             comicname = subprocess.check_output('fzf', stdin=tf).decode('utf-8').strip()
             # there are probably better ways to do this.
             comic = [x for x in data if comicname in x][0]
             subprocess.run(f'open "{comic}"', shell=True, check=True)
+            helpers.write_to_conf('General', 'last-read', comicname)
 
         elif args.action == 'remove':
             comicname = subprocess.check_output('fzf', stdin=tf).decode('utf-8').strip()
             comic = [x for x in data if comicname in x][0]
             ans = input(f'Are you sure you want to delete "{comicname}"? (y/n): ').lower()
+            outputformat.br()
 
             if ans in ('y', 'yes'):
                 os.remove(comic)
-                outputformat.br()
                 outputformat.boxtitle(f'{comicname} deleted successfully.', style='#', bold=True)
-                outputformat.br()
-            
+
             else:
-                outputformat.br()
                 outputformat.boxtitle('Huh?', style='#', bold=True)
-                outputformat.br()
-        
+
+        elif args.action == 'last-read':
+            last_read = config.get('General', 'last-read')
+            print(f'Last read: {last_read if last_read else "Read some comics."}')
+
+        outputformat.br()
         tf.close()
 
 

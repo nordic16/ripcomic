@@ -1,11 +1,11 @@
 """This module contains a few useful functions to handle all sorts of ripcomic's commands."""
 import outputformat, subprocess, configparser, os
 from bs4 import BeautifulSoup
-from settings import BASE_SEARCH_URL, SESSION, DEBUG
+from settings import BASE_SEARCH_URL, SESSION, DEBUG, DEFAULT_CONFIG_PATH
 
 ### HELPERS
 def initialize_config():
-    parser = configparser.ConfigParser()
+    parser = configparser.ConfigParser(allow_no_value=True)
     parser.read(os.path.expanduser('~/.config/ripcomic.ini'))
     return parser
 
@@ -17,10 +17,10 @@ def download_comic(comic_url: str, title: str, path: str):
     try:
         download_url = comic_page_parser.find('a', class_='aio-red', title='Download Now')['href']
         fname = f'{path}{title.strip()}.cbz'
+        r = SESSION.get(download_url, timeout=20)
 
         outputformat.boxtitle('Loading comic...')
 
-        r = SESSION.get(download_url, timeout=20)
 
         # Downloads the desired comic.
         with open(os.path.expanduser(fname), 'wb') as file:
@@ -56,7 +56,18 @@ def find_comics(query: str, page: int):
         parser = BeautifulSoup(doc, 'html.parser')
 
         return parser.find_all(attrs={'class' : 'post-header-image'})
-  
+
+    return None
+
+
+def write_to_conf(section: str, option: str, value: str):
+    """Quick and convenient way to write something to config."""
+    config = initialize_config()
+
+    with open(DEFAULT_CONFIG_PATH, 'wt') as cfg:
+        config.set(section, option, value)
+        config.write(cfg)
+
 
 def list_files(path: str, show_full_path: bool, values_to_return=[]):
     """returns all files within a directory."""
