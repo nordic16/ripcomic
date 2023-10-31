@@ -1,5 +1,5 @@
 """This module contains a few useful functions to handle all sorts of ripcomic's commands."""
-import outputformat, subprocess, configparser, os
+import outputformat, subprocess, configparser, os, tempfile
 from bs4 import BeautifulSoup
 from settings import BASE_SEARCH_URL, SESSION, DEBUG, DEFAULT_CONFIG_PATH
 
@@ -67,6 +67,19 @@ def write_to_conf(section: str, option: str, value: str):
     with open(DEFAULT_CONFIG_PATH, 'wt') as cfg:
         config.set(section, option, value)
         config.write(cfg)
+
+
+def list_library_fzf(data):
+    """Convenient way to list all comics on fzf. Returns, for convenience, 
+        both the full path (0) and the name of the file (1) chosen by the user"""
+    with tempfile.NamedTemporaryFile() as tf:
+        tf.writelines([f'{os.path.basename(x)}\n'.encode('utf-8') for x in data])
+        tf.seek(0)
+
+        comicname = subprocess.check_output('fzf', stdin=tf).decode('utf-8').strip()
+        comic = [x for x in data if comicname in x][0]
+
+        return (comic, comicname)
 
 
 def list_files(path: str, show_full_path: bool, values_to_return=[]):

@@ -53,8 +53,6 @@ def comic_command(args):
 
             # Actually does the job lmao
             p = subprocess.check_output('fzf', stdin=tf)
-            config = helpers.initialize_config()
-
             title = p.decode('utf-8')
             comic_url = comics[int(title[0])].a['href']
             
@@ -99,38 +97,29 @@ def library_command(args):
     data = list(filter(lambda x: os.path.splitext(x)[1] in ('.cbr', '.cbz'), data))
     data.sort()
 
-    # This code is outside the 1st and 2nd if statement in order to reduce repetition, despite not being used in the 'last-read' command.
-    with tempfile.NamedTemporaryFile() as tf:
-        tf.writelines([f'{os.path.basename(x)}\n'.encode('utf-8') for x in data])
-        tf.seek(0)
+    if args.action == 'list':
+        comic = helpers.list_library_fzf(data)
+        subprocess.run(f'open "{comic[0]}"', shell=True, check=True)
+        helpers.write_to_conf('General', 'last-read', comic[1])
 
-        # TODO: lines common to 'list' and 'remove' should be their own separate function.
-        if args.action == 'list':
-            comicname = subprocess.check_output('fzf', stdin=tf).decode('utf-8').strip()
-            # there are probably better ways to do this.
-            comic = [x for x in data if comicname in x][0]
-            subprocess.run(f'open "{comic}"', shell=True, check=True)
-            helpers.write_to_conf('General', 'last-read', comicname)
+    elif args.action == 'remove':
+        comic = helpers.list_library_fzf(data)
+        ans = input(f'Are you sure you want to delete "{comic[1]}"? (y/n): ').lower()
+        outputformat.br()
 
-        elif args.action == 'remove':
-            comicname = subprocess.check_output('fzf', stdin=tf).decode('utf-8').strip()
-            comic = [x for x in data if comicname in x][0]
-            ans = input(f'Are you sure you want to delete "{comicname}"? (y/n): ').lower()
-            outputformat.br()
+        if ans in ('y', 'yes'):
+            os.remove(comic[0])
+            outputformat.boxtitle(f'{comic[1]} deleted successfully.', style='#', bold=True)
 
-            if ans in ('y', 'yes'):
-                os.remove(comic)
-                outputformat.boxtitle(f'{comicname} deleted successfully.', style='#', bold=True)
+        else:
+            outputformat.boxtitle('Huh?', style='#', bold=True)
 
-            else:
-                outputformat.boxtitle('Huh?', style='#', bold=True)
-
-        elif args.action == 'last-read':
-            last_read = config.get('General', 'last-read')
-            print(f'Last read: {last_read if last_read else "Read some comics."}')
+    elif args.action == 'last-read':
+        config = helpers.initialize_config()
+        last_read = config.get('General', 'last-read')
+        print(f'Last read: {last_read if last_read else "Read some comics."}')
 
         outputformat.br()
-        tf.close()
 
 
 
