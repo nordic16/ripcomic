@@ -30,8 +30,16 @@ def main():
     libraryparser.add_argument('action', action='store', choices=['list', 'remove', 'last-read'])
     libraryparser.set_defaults(func=library_command)
 
-    args = parser.parse_args()
-    args.func(args)
+    try:
+        args = parser.parse_args()
+        args.func(args)
+
+
+    except subprocess.CalledProcessError as e:
+        print('Something went wrong. Did you select any comics?')
+
+        if DEBUG:
+            print(e)
 
 
 ### COMMANDS

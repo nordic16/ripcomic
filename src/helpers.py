@@ -11,7 +11,7 @@ def initialize_config():
 
 
 def download_comic(comic_url: str, title: str, path: str):
-    """Downloads the comic onto the file system. Returns file path."""
+    """Downloads the comic onto the file system."""
     comic_page_parser = BeautifulSoup(SESSION.get(comic_url, timeout=15).text, 'html.parser')
 
     try:
@@ -20,7 +20,6 @@ def download_comic(comic_url: str, title: str, path: str):
         r = SESSION.get(download_url, timeout=20)
 
         outputformat.boxtitle('Loading comic...')
-
 
         # Downloads the desired comic.
         with open(os.path.expanduser(fname), 'wb') as file:
