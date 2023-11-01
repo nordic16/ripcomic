@@ -11,7 +11,7 @@ def initialize_config():
 
 
 def download_comic(comic_url: str, title: str, path: str):
-    """Downloads the comic onto the file system"""
+    """Downloads the comic onto the file system. Returns file path."""
     comic_page_parser = BeautifulSoup(SESSION.get(comic_url, timeout=15).text, 'html.parser')
 
     try:
@@ -69,17 +69,14 @@ def write_to_conf(section: str, option: str, value: str):
         config.write(cfg)
 
 
-def list_library_fzf(data):
-    """Convenient way to list all comics on fzf. Returns, for convenience, 
-        both the full path (0) and the name of the file (1) chosen by the user"""
+def list_files_fzf(data):
+    """Convenient way to list files on fzf and return the output."""
     with tempfile.NamedTemporaryFile() as tf:
-        tf.writelines([f'{os.path.basename(x)}\n'.encode('utf-8') for x in data])
+        tf.writelines(data)
         tf.seek(0)
 
-        comicname = subprocess.check_output('fzf', stdin=tf).decode('utf-8').strip()
-        comic = [x for x in data if comicname in x][0]
-
-        return (comic, comicname)
+        output = subprocess.check_output('fzf', stdin=tf).decode('utf-8').strip()
+        return output
 
 
 def list_files(path: str, show_full_path: bool, values_to_return=[]):
