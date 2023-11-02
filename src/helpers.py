@@ -59,7 +59,7 @@ def find_comics(query: str, page: int):
     return None
 
 
-def write_to_conf(section: str, option: str, value: str):
+def write_to_conf(section: str, option: str, value):
     """Quick and convenient way to write something to config."""
     config = initialize_config()
 
@@ -100,12 +100,17 @@ def list_files(path: str, show_full_path: bool, values_to_return=[]):
 def open_comic(path: str):
     """Convenient way to open a given comic, set it as last-read
     and add it to the reading history"""
-    comicname = os.path.basename(path)
+    comicname = os.path.splitext(os.path.basename(path))
+    config = initialize_config()
 
-    subprocess.run(f'open "{path}"', shell=True , check=True)
-    write_to_conf('General', 'last-read', os.path.splitext(comicname)[0]) # This might be deprecated soon.
+    subprocess.run(f'open "{path}"', shell=True, check=True)
+    write_to_conf('General', 'last-read', os.path.splitext(comicname)) # This might be deprecated soon.
 
-    # Code to set-history will appear here.
+    # Adds to history.
+    history = config.get('General', 'history').splitlines()
+    history.insert(0, f'{comicname}')
 
+    # Just works lmao
+    write_to_conf('General', 'history', "\n".join(history))
 
     

@@ -1,4 +1,4 @@
-import argparse, shutil, subprocess, os, outputformat
+import argparse, shutil, subprocess, os, outputformat, json
 import helpers
 from settings import DEBUG, SESSION
 
@@ -48,6 +48,7 @@ def main():
 
         if DEBUG:
             print(e)
+
 
 ### COMMANDS
 def comic_command(args):
@@ -118,7 +119,12 @@ def library_command(args):
 
 def history_command(args):
     """Handles the history command"""
-    
+    config = helpers.initialize_config()
+    history = config.get('General', 'history').strip()
 
+    for i, x in enumerate(history.splitlines()):
+        print(f'{i + 1} - {x}')
+
+    
 if __name__ == '__main__':
     main()
