@@ -13,7 +13,7 @@
     4. History.[In-progress]
         1. Add history_size option to config [DONE]
         2. Add command to edit history size [DONE]
-        3. Implement method
+        3. Implement function
 5. Setup
     + Setup must create the config file and directory.
 

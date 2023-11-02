@@ -36,6 +36,7 @@ def main():
 
     sethistory_parser = subparsers.add_parser('set-history')
     sethistory_parser.add_argument('size', action='store')
+    # This will have to be turned into a function soon for input validation.
     sethistory_parser.set_defaults(func=lambda args: helpers.write_to_conf('Settings', 'history-size', args.size))
 
     try:
@@ -63,8 +64,8 @@ def comic_command(args):
     # removes index to display to user later
     comic = comic[comic.find('-') + 1:].strip()
 
-    helpers.download_comic(comic_url, comic, path)
-    helpers.write_to_conf('General', 'last-read', comic)
+    path = helpers.download_comic(comic_url, comic, path)
+    helpers.open_comic(path)
 
 
 def set_library_command(args):
@@ -92,9 +93,7 @@ def library_command(args):
     if args.action == 'list':
         comicname = helpers.list_files_fzf([f'{os.path.basename(x)}\n'.encode('utf-8') for x in data])
         comic = [x for x in data if comicname in x][0]
-
-        subprocess.run(f'open "{comic}"', shell=True, check=True)
-        helpers.write_to_conf('General', 'last-read', os.path.splitext(comicname)[0])
+        helpers.open_comic(comic)
 
     elif args.action == 'remove':
         comic = helpers.list_files_fzf([f'{os.path.basename(x)}\n'.encode('utf-8') for x in data])
@@ -118,7 +117,7 @@ def library_command(args):
 
 
 def history_command(args):
-    print('Feature not implemented yet.')
+    """Handles the history command"""
     
 
 if __name__ == '__main__':

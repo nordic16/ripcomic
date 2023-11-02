@@ -10,8 +10,8 @@ def initialize_config():
     return parser
 
 
-def download_comic(comic_url: str, title: str, path: str):
-    """Downloads the comic onto the file system."""
+def download_comic(comic_url: str, title: str, path: str) -> str:
+    """Downloads the comic onto the file system. Returns file path"""
     comic_page_parser = BeautifulSoup(SESSION.get(comic_url, timeout=15).text, 'html.parser')
 
     try:
@@ -36,7 +36,7 @@ def download_comic(comic_url: str, title: str, path: str):
                     outputformat.bar(progress, total, show_values=False, title=outputformat.b('Progress', return_str=True), title_pad=4, style='bar')
 
             outputformat.boxtitle('Download complete!')
-            subprocess.run(f'open "{file.name}"', shell=True , check=True)
+            return file.name
 
     except KeyError as e:
         print('something went wrong.')
@@ -95,3 +95,17 @@ def list_files(path: str, show_full_path: bool, values_to_return=[]):
             values_to_return.append(val)
 
     return values_to_return
+
+
+def open_comic(path: str):
+    """Convenient way to open a given comic, set it as last-read
+    and add it to the reading history"""
+    comicname = os.path.basename(path)
+
+    subprocess.run(f'open "{path}"', shell=True , check=True)
+    write_to_conf('General', 'last-read', os.path.splitext(comicname)[0]) # This might be deprecated soon.
+
+    # Code to set-history will appear here.
+
+
+    
