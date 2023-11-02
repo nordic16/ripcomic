@@ -10,7 +10,10 @@
         3. If yes, delete the comic.
 
     3. last-read feature [Done]
-    4. History.
+    4. History.[In-progress]
+        1. Add history_size option to config [DONE]
+        2. Add command to edit history size [DONE]
+        3. Implement method
 5. Setup
     + Setup must create the config file and directory.
 

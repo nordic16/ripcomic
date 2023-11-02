@@ -1,6 +1,6 @@
-import argparse, shutil, subprocess, tempfile, os, outputformat
+import argparse, shutil, subprocess, os, outputformat
 import helpers
-from settings import DEBUG, SESSION, DEFAULT_CONFIG_PATH
+from settings import DEBUG, SESSION
 
 def main():
     SESSION.headers.update({'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36',
@@ -30,17 +30,23 @@ def main():
     libraryparser.add_argument('action', action='store', choices=['list', 'remove', 'last-read'])
     libraryparser.set_defaults(func=library_command)
 
+    historyparser = subparsers.add_parser('history')
+    historyparser.add_argument('--last', action='store', type=int)
+    historyparser.set_defaults(func=history_command)
+
+    sethistory_parser = subparsers.add_parser('set-history')
+    sethistory_parser.add_argument('size', action='store')
+    sethistory_parser.set_defaults(func=lambda args: helpers.write_to_conf('Settings', 'history-size', args.size))
+
     try:
         args = parser.parse_args()
         args.func(args)
-
 
     except subprocess.CalledProcessError as e:
         print('Something went wrong. Did you select any comics?')
 
         if DEBUG:
             print(e)
-
 
 ### COMMANDS
 def comic_command(args):
@@ -53,11 +59,11 @@ def comic_command(args):
     data = [f'{index} - {c.a.img["alt"]}\n'.encode('utf-8') for (index, c) in enumerate(comics)]
     comic = helpers.list_files_fzf(data)
     comic_url = comics[int(comic[0])].a['href']
-    
+
     # removes index to display to user later
     comic = comic[comic.find('-') + 1:].strip()
 
-    fname = helpers.download_comic(comic_url, comic, path)
+    helpers.download_comic(comic_url, comic, path)
     helpers.write_to_conf('General', 'last-read', comic)
 
 
@@ -111,6 +117,9 @@ def library_command(args):
         outputformat.br()
 
 
+def history_command(args):
+    print('Feature not implemented yet.')
+    
 
 if __name__ == '__main__':
     main()
