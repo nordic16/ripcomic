@@ -119,10 +119,16 @@ def library_command(args):
 def history_command(args):
     """Handles the history command"""
     config = helpers.initialize_config()
-    history = config.get('General', 'history').strip()
+    history = config.get('General', 'history').strip().splitlines()
+    history_size = config.getint('Settings', 'history-size') 
 
-    for i, x in enumerate(history.splitlines()):
-        print(f'{i + 1} - {x}')
+    # Makes sure the code below will never go out of bounds.
+    i = history_size if args.last > history_size or args.last < 1 else args.last
+
+    for j in range(i):
+        print(f'({j + 1}) {history[j]}')
+
+
 
 
 def set_history_size(args):
