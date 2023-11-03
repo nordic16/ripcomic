@@ -9,11 +9,11 @@
         2. Ask, one more time if they are sure.
         3. If yes, delete the comic.
 
-    [x] last-read feature
-    [x] History.
-        1. Add history_size option to config [DONE]
-        2. Add command to edit history size [DONE]
-        3. Implement function [DONE]
+    - [x] last-read feature
+    - [x] History.
+        1. Add history_size option to config 
+        2. Add command to edit history size
+        3. Implement function
 5. Setup
     + Setup must create the config file and directory.
 
