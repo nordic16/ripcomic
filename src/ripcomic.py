@@ -1,7 +1,6 @@
-import argparse, shutil, subprocess, os, outputformat, json
+import argparse, shutil, subprocess, os, outputformat
 import helpers
-from settings import DEBUG, SESSION
-
+from settings import DEBUG, SESSION, MAX_HISTORY_SIZE
 def main():
     SESSION.headers.update({'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36',
         'Accept-Encoding': 'gzip'})
@@ -35,9 +34,9 @@ def main():
     historyparser.set_defaults(func=history_command)
 
     sethistory_parser = subparsers.add_parser('set-history')
-    sethistory_parser.add_argument('size', action='store')
+    sethistory_parser.add_argument('size', action='store', type=int)
     # This will have to be turned into a function soon for input validation.
-    sethistory_parser.set_defaults(func=lambda args: helpers.write_to_conf('Settings', 'history-size', args.size))
+    sethistory_parser.set_defaults(func=set_history_size)
 
     try:
         args = parser.parse_args()
@@ -50,7 +49,7 @@ def main():
             print(e)
 
 
-### COMMANDS
+#### COMMANDS
 def comic_command(args):
     """This function handles the comic command."""
     comic = args.comic
@@ -125,6 +124,17 @@ def history_command(args):
     for i, x in enumerate(history.splitlines()):
         print(f'{i + 1} - {x}')
 
-    
+
+def set_history_size(args):
+    if args.size > MAX_HISTORY_SIZE: # 70 seems a reasonable max size
+        print(f'{args.size} > {MAX_HISTORY_SIZE}! Choose a smaller number.')
+
+    elif args.size < 1:
+        print(f'{args.size} < 1... Why.')
+
+    else:
+        helpers.write_to_conf('Settings', 'history-size', str(args.size))
+
+
 if __name__ == '__main__':
     main()

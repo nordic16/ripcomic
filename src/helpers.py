@@ -1,7 +1,7 @@
 """This module contains a few useful functions to handle all sorts of ripcomic's commands."""
 import outputformat, subprocess, configparser, os, tempfile
 from bs4 import BeautifulSoup
-from settings import BASE_SEARCH_URL, SESSION, DEBUG, DEFAULT_CONFIG_PATH
+from settings import BASE_SEARCH_URL, SESSION, DEBUG, DEFAULT_CONFIG_PATH, MAX_HISTORY_SIZE
 
 ### HELPERS
 def initialize_config():
@@ -100,17 +100,21 @@ def list_files(path: str, show_full_path: bool, values_to_return=[]):
 def open_comic(path: str):
     """Convenient way to open a given comic, set it as last-read
     and add it to the reading history"""
-    comicname = os.path.splitext(os.path.basename(path))
+    comicname = os.path.splitext(os.path.basename(path))[0]
     config = initialize_config()
+    history_size = config.getint('Settings', 'history-size')
 
-    subprocess.run(f'open "{path}"', shell=True, check=True)
-    write_to_conf('General', 'last-read', os.path.splitext(comicname)) # This might be deprecated soon.
+    # subprocess.run(f'open "{path}"', shell=True, check=True)
 
     # Adds to history.
     history = config.get('General', 'history').splitlines()
     history.insert(0, f'{comicname}')
 
+    if len(history) > history_size:
+        history.pop()
+
     # Just works lmao
     write_to_conf('General', 'history', "\n".join(history))
+    write_to_conf('General', 'last-read', comicname) # This might be deprecated soon.
 
     
