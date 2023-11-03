@@ -132,6 +132,7 @@ def history_command(args):
 
 
 def set_history_size(args):
+    """handles the set-history command."""
     if args.size > MAX_HISTORY_SIZE: # 70 seems a reasonable max size
         print(f'{args.size} > {MAX_HISTORY_SIZE}! Choose a smaller number.')
 
