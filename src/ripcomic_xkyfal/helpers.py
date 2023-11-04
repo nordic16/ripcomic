@@ -1,7 +1,7 @@
 """This module contains a few useful functions to handle all sorts of ripcomic's commands."""
 import outputformat, subprocess, configparser, os, tempfile
 from bs4 import BeautifulSoup
-from settings import BASE_SEARCH_URL, SESSION, DEBUG, DEFAULT_CONFIG_PATH, MAX_HISTORY_SIZE
+from settings import BASE_SEARCH_URL, SESSION, DEBUG, DEFAULT_CONFIG_PATH
 
 ### HELPERS
 def initialize_config():
@@ -59,7 +59,7 @@ def find_comics(query: str, page: int):
     return None
 
 
-def write_to_conf(section: str, option: str, value):
+def write_to_conf(section: str, option: str, value: str):
     """Quick and convenient way to write something to config."""
     config = initialize_config()
 
@@ -104,7 +104,7 @@ def open_comic(path: str):
     config = initialize_config()
     history_size = config.getint('Settings', 'history-size')
 
-    # subprocess.run(f'open "{path}"', shell=True, check=True)
+    subprocess.run(f'open "{path}"', shell=True, check=True)
 
     # Adds to history.
     history = config.get('General', 'history').splitlines()

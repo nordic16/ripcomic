@@ -35,7 +35,6 @@ def main():
 
     sethistory_parser = subparsers.add_parser('set-history')
     sethistory_parser.add_argument('size', action='store', type=int)
-    # This will have to be turned into a function soon for input validation.
     sethistory_parser.set_defaults(func=set_history_size)
 
     try:
@@ -129,8 +128,6 @@ def history_command(args):
         print(f'({j + 1}) {history[j]}')
 
 
-
-
 def set_history_size(args):
     """handles the set-history command."""
     if args.size > MAX_HISTORY_SIZE: # 70 seems a reasonable max size
@@ -141,7 +138,6 @@ def set_history_size(args):
 
     else:
         helpers.write_to_conf('Settings', 'history-size', str(args.size))
-
 
 if __name__ == '__main__':
     main()
