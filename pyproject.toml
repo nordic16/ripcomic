@@ -1,0 +1,23 @@
+[build-system]
+requires = ["hatchling"]
+dependencies = ['requests', 'argparse', 'outputformat', 'beautifulsoup4']
+build-backend = "hatchling.build"
+
+[project]
+name = "ripcomic_xkyfal"
+version = "0.0.1"
+authors = [
+  { name="Diogo", email="diogo6204@gmail.com" },
+]
+description = "A comic scraper written in python. Still under development."
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/nordic16/ripcomic"
+"Bug Tracker" = "https://github.com/nordic16/ripcomic/issues"
