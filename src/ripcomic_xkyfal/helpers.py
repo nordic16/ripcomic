@@ -1,12 +1,28 @@
 """This module contains a few useful functions to handle all sorts of ripcomic's commands."""
-import outputformat, subprocess, configparser, os, tempfile
+import outputformat, subprocess, configparser, os, tempfile, inspect
 from bs4 import BeautifulSoup
-from settings import BASE_SEARCH_URL, SESSION, DEBUG, DEFAULT_CONFIG_PATH
+from settings import BASE_SEARCH_URL, SESSION, DEBUG, DEFAULT_CONFIG_PATH, DEFAULT_LIBRARY_PATH
 
 ### HELPERS
 def initialize_config():
+    """Further notes on configuration: the code creates one if it doesn't exist."""
     parser = configparser.ConfigParser(allow_no_value=True)
-    parser.read(os.path.expanduser('~/.config/ripcomic.ini'))
+    path = os.path.expanduser(DEFAULT_CONFIG_PATH)
+    
+    # if config doesn't exist, create one
+    if not os.path.exists(path):
+        with open(path, 'x') as f:
+            f.write(inspect.cleandoc(f"""[Settings]
+                    library-path = {DEFAULT_LIBRARY_PATH}
+                    history-size = 10
+
+                    [General]
+                    last-read =
+                    history = 
+            """))
+
+    parser.read(path)
+
     return parser
 
 
