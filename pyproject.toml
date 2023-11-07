@@ -1,14 +1,15 @@
 [build-system]
 requires = ["hatchling"]
-dependencies = ['requests', 'argparse', 'outputformat', 'beautifulsoup4']
 build-backend = "hatchling.build"
 
 [project]
-name = "ripcomic_xkyfal"
+name = "ripcomic"
 version = "0.0.1"
 authors = [
-  { name="Diogo", email="diogo6204@gmail.com" },
+  { name="Diogo", email="nordicdev14@outlook.com" },
 ]
+dependencies = ['requests', 'argparse', 'outputformat', 'beautifulsoup4']
+
 description = "A comic scraper written in python. Still under development."
 readme = "README.md"
 requires-python = ">=3.7"
