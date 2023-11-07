@@ -4,11 +4,11 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ripcomic"
-version = "0.0.1"
+version = "0.0.2"
 authors = [
   { name="Diogo", email="nordicdev14@outlook.com" },
 ]
-dependencies = ['requests', 'argparse', 'outputformat', 'beautifulsoup4']
+dependencies = ['requests', 'outputformat', 'beautifulsoup4']
 
 description = "A comic scraper written in python. Still under development."
 readme = "README.md"
